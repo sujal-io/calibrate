@@ -13,10 +13,13 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@clerk/express": "^2.1.42",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongoose": "^9.7.3"
+    "mongoose": "^9.7.3",
+    "zod": "^4.4.3",
+    "zod-validation-error": "^5.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
