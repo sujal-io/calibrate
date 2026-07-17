@@ -1,11 +1,10 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const resumeSchema = new Schema(
   {
     clerkId: {
       type: String,
       required: true,
-      index: true,
     },
 
     fileName: {
@@ -23,4 +22,4 @@ const resumeSchema = new Schema(
   }
 );
 
-export const Resume = model("Resume", resumeSchema);
+export const Resume = mongoose.model("Resume", resumeSchema);

@@ -1,4 +1,9 @@
 import { Request, Response } from "express";
+import { getAuth } from "@clerk/express";
+import {
+  extractResumeText,
+  saveResume,
+} from "./resume.service.js";
 
 export const uploadResume = async (
   req: Request,
@@ -13,14 +18,32 @@ export const uploadResume = async (
       return;
     }
 
-    res.status(200).json({
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+
+    const extractedText = await extractResumeText(req.file.buffer);
+
+    const resume = await saveResume(
+      userId,
+      req.file.originalname,
+      extractedText
+    );
+
+    res.status(201).json({
       success: true,
       message: "Resume uploaded successfully.",
-      fileName: req.file.originalname,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
+      resume,
     });
   } catch (error) {
+    console.error(error);
+
     res.status(500).json({
       success: false,
       message: "Upload failed.",
