@@ -1,6 +1,8 @@
 import express from "express";
 import authRoutes from "./features/auth/auth.route.js";
 import { clerkMiddleware } from "@clerk/express";
+import resumeRoutes from "./features/resume/resume.route.js";
+
 import cors from "cors";
 
 const app = express();
@@ -17,6 +19,7 @@ app.use(express.json());
 app.use(clerkMiddleware());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/resume", resumeRoutes);
 
 app.get("/", (_req, res) => {
   res.send("🚀 Calibrate API is running");

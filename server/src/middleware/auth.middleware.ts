@@ -6,6 +6,7 @@ export const requireAuth = (
   res: Response,
   next: NextFunction
 ) => {
+
   const { userId } = getAuth(req);
 
   if (!userId) {

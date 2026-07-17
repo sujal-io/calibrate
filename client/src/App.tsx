@@ -44,12 +44,37 @@ function App() {
       </SignedOut>
 
       <SignedIn>
-        <div className="text-center space-y-5">
-          <h1 className="text-4xl font-bold">Welcome to Calibrate 🚀</h1>
+        <div className="space-y-4 text-center">
+          <h1 className="text-3xl font-bold">Calibrate</h1>
 
-          <UserButton afterSignOutUrl="/" />
+          <UserButton />
 
-          <p className="text-gray-500">Authentication Successful</p>
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+
+              if (!file) return;
+
+              const token = await getToken();
+
+              const formData = new FormData();
+              formData.append("resume", file);
+
+              try {
+                const response = await api.post("/resume/upload", formData, {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                });
+
+                console.log(response.data);
+              } catch (err) {
+                console.error(err);
+              }
+            }}
+          />
         </div>
       </SignedIn>
     </div>
