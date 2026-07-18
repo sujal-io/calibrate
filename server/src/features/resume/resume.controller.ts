@@ -1,13 +1,10 @@
 import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
-import {
-  extractResumeText,
-  saveResume,
-} from "./resume.service.js";
+import { processResume } from "./resume.service.js";
 
 export const uploadResume = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<void> => {
   try {
     if (!req.file) {
@@ -28,12 +25,10 @@ export const uploadResume = async (
       return;
     }
 
-    const extractedText = await extractResumeText(req.file.buffer);
-
-    const resume = await saveResume(
+    const resume = await processResume(
       userId,
       req.file.originalname,
-      extractedText
+      req.file.buffer,
     );
 
     res.status(201).json({
