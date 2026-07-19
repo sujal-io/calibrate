@@ -1,5 +1,4 @@
-import { gemini } from "../../config/gemini.js";
-
+import { generateStructuredResponse } from "../../utils/geminiHelper.js";
 import { RecommendationSchema } from "./recommendation.schema.js";
 import { RECOMMENDATION_PROMPT } from "./recommendation.prompt.js";
 
@@ -11,9 +10,7 @@ export const generateRecommendations = async (
   jobDescription: JobDescriptionData,
   matchResult: MatchResult
 ) => {
-  const response = await gemini.models.generateContent({
-    model: process.env.GEMINI_MODEL!,
-    contents: `${RECOMMENDATION_PROMPT}
+  const prompt = `${RECOMMENDATION_PROMPT}
 
 Resume:
 ${JSON.stringify(resume, null, 2)}
@@ -23,21 +20,10 @@ ${JSON.stringify(jobDescription, null, 2)}
 
 Match Result:
 ${JSON.stringify(matchResult, null, 2)}
-`,
-  });
+`;
 
-  const text = response.text;
-
-  if (!text) {
-    throw new Error("Gemini returned an empty response.");
-  }
-
-  const cleanedText = text
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
-
-  const parsed = JSON.parse(cleanedText);
-
-  return RecommendationSchema.parse(parsed);
+return generateStructuredResponse(
+  prompt,
+  RecommendationSchema
+);
 };

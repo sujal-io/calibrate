@@ -32,5 +32,5 @@ Rules:
 - Keep the summary under 80 words.
 - Return at least 3 strengths if possible.
 - Return at least 3 improvements if possible.
-- Recommend practical and not very tutorial like software projects that would actually improve the candidate's profile for this role.
+- Recommend exactly 3 practical and not very tutorial like software projects that would actually improve the candidate's profile for this role.
 `;

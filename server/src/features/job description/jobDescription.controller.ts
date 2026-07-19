@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
-
+import { ZodError } from "zod";
 import { AnalyzeJobDescriptionSchema } from "./jobDescription.validation.js";
 import { analyzeJobDescription } from "./jobDescription.service.js";
 
@@ -30,11 +30,41 @@ export const analyzeJobDescriptionController = async (
       data: result,
     });
   } catch (error) {
-    console.error(error);
+  console.error(error);
 
-    return res.status(500).json({
+  // Zod validation error
+  if (error instanceof ZodError) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid request body.",
+    errors: error.flatten(),
+  });
+}
+
+  // Resume not uploaded
+  if (error instanceof Error && error.message === "Resume not found.") {
+    return res.status(404).json({
       success: false,
-      message: "Failed to analyze job description.",
+      message: error.message,
     });
   }
+
+  // Gemini/AI errors
+  if (
+    error instanceof Error &&
+    (error.message.includes("Gemini") ||
+      error.message.includes("generateContent"))
+  ) {
+    return res.status(502).json({
+      success: false,
+      message: "AI service is temporarily unavailable.",
+    });
+  }
+
+  // Unexpected errors
+  return res.status(500).json({
+    success: false,
+    message: "Internal server error.",
+  });
+}
 };
