@@ -19,7 +19,7 @@ function App() {
       try {
         const token = await getToken();
         console.log(token);
-
+    
         await api.post(
           "/auth/sync",
           {},
