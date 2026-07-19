@@ -1,30 +1,28 @@
-import { gemini } from "../../config/gemini.js";
-import { ResumeSchema } from "./extraction.schema.js";
-import { RESUME_EXTRACTION_PROMPT } from "./extraction.prompt.js";
+import { generateStructuredResponse } from "../../utils/geminiHelper.js";
+import {ResumeSchema,JobDescriptionSchema} from "./extraction.schema.js";
+import {RESUME_EXTRACTION_PROMPT,JOB_DESCRIPTION_EXTRACTION_PROMPT} from "./extraction.prompt.js";
 
 export const extractStructuredResume = async (resumeText: string) => {
-  const response = await gemini.models.generateContent({
-    model: process.env.GEMINI_MODEL!,
-    contents: `${RESUME_EXTRACTION_PROMPT}
+  const prompt = `${RESUME_EXTRACTION_PROMPT}
 
 Resume:
 
-${resumeText}`,
-  });
+${resumeText}`;
 
-  const text = response.text;
+  return generateStructuredResponse(prompt, ResumeSchema);
+}
 
-  if (!text) {
-    throw new Error("Gemini returned an empty response.");
-  }
+export const extractStructuredJobDescription = async (
+  jobDescription: string
+) => {
+  const prompt = `${JOB_DESCRIPTION_EXTRACTION_PROMPT}
 
-  // Gemini sometimes wraps JSON in ```json ... ```
-  const cleanedText = text
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
+Job Description:
 
-  const parsed = JSON.parse(cleanedText);
+${jobDescription}`;
 
-  return ResumeSchema.parse(parsed);
+  return generateStructuredResponse(
+    prompt,
+    JobDescriptionSchema
+  );
 };
