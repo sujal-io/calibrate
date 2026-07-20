@@ -14,12 +14,13 @@ export const ResumeSchema = z.object({
   skills: z.array(z.string()),
 
   experience: z.array(
-    z.object({
-      company: z.string(),
-      role: z.string(),
-      duration: z.string(),
-    })
-  ),
+  z.object({
+    company: z.string(),
+    role: z.string(),
+    duration: z.string(),
+    description: z.array(z.string()),
+  })
+),
 
   education: z.array(
     z.object({
@@ -30,11 +31,12 @@ export const ResumeSchema = z.object({
   ),
 
   projects: z.array(
-    z.object({
-      name: z.string(),
-      technologies: z.array(z.string()),
-    })
-  ),
+  z.object({
+    name: z.string(),
+    technologies: z.array(z.string()),
+    description: z.array(z.string()),
+  })
+),
 });
 
 export type ResumeData = z.infer<typeof ResumeSchema>;

@@ -1,7 +1,7 @@
 import pdfParse from "pdf-parse";
 import { Resume } from "./resume.model.js";
 import { extractStructuredResume } from "../extraction/extraction.service.js";
-
+import { buildBulletDocuments } from "../leveling/services/bulletBuilder.service.js";
 export const extractResumeText = async (buffer: Buffer): Promise<string> => {
   const parsed = await pdfParse(buffer);
   return parsed.text;
@@ -18,12 +18,15 @@ export const processResume = async (
   // Step 2: Convert raw text into structured JSON using Gemini
   const structuredData = await extractStructuredResume(rawText);
 
-  // Step 3: Save everything to MongoDB
+  const bullets = buildBulletDocuments(structuredData);
+
+  //  Save everything to MongoDB
   return await saveResume(
     clerkId,
     fileName,
     rawText,
-    structuredData
+    structuredData,
+    bullets
   );
 };
 
@@ -31,7 +34,8 @@ export const saveResume = async (
   clerkId: string,
   fileName: string,
   rawText: string,
-  structuredData: unknown
+  structuredData: unknown,
+  bullets: unknown
 ) => {
   return Resume.findOneAndUpdate(
     { clerkId },
@@ -40,6 +44,7 @@ export const saveResume = async (
       fileName,
       rawText,
       structuredData,
+      bullets,
     },
     {
       returnDocument: "after",

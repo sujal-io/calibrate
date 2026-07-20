@@ -22,10 +22,25 @@ const ResumeSchema = new Schema(
       type: Schema.Types.Mixed,
       default: null,
     },
+    bullets: [
+      {
+        bulletId: String,
+
+        section: String,
+
+        company: String,
+
+        role: String,
+
+        duration: String,
+
+        text: String,
+      },
+    ],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export const Resume = model("Resume", ResumeSchema);
