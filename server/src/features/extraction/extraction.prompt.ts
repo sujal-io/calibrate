@@ -18,10 +18,11 @@ The JSON must exactly match this structure:
   "skills": string[],
   "experience": [
     {
-      "company": string,
-      "role": string,
-      "duration": string
-    }
+  "company": string,
+  "role": string,
+  "duration": string,
+  "description": string[]
+}
   ],
   "education": [
     {
@@ -32,9 +33,10 @@ The JSON must exactly match this structure:
   ],
   "projects": [
     {
-      "name": string,
-      "technologies": string[]
-    }
+  "name": string,
+  "technologies": string[],
+  "description": string[]
+}
   ]
 }
 
@@ -49,8 +51,12 @@ Rules:
   NodeJS -> Node.js
   ExpressJS -> Express
   Mongo DB -> MongoDB
+  - Extract every resume bullet point exactly as written.
+- Store each bullet as a separate string in the description array.
+- Do not summarize or rewrite bullet points.
+- Preserve the original order of the bullet points.
+- If an experience or project has no bullet points, return an empty description array.
 `;
-
 
 export const JOB_DESCRIPTION_EXTRACTION_PROMPT = `
 You are an expert software engineering recruiter.
