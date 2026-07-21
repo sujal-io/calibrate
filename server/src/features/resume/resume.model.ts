@@ -35,6 +35,11 @@ const ResumeSchema = new Schema(
         duration: String,
 
         text: String,
+
+        embedding: {
+          type: [Number],
+          default: undefined,
+        },
       },
     ],
   },
