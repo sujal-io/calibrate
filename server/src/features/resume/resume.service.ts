@@ -2,6 +2,8 @@ import pdfParse from "pdf-parse";
 import { Resume } from "./resume.model.js";
 import { extractStructuredResume } from "../extraction/extraction.service.js";
 import { buildBulletDocuments } from "../leveling/services/bulletBuilder.service.js";
+import { generateEmbedding } from "../embeddings/services/embedding.service.js";
+import { ResumeBullet } from "../leveling/schemas/bullet.schema.js";
 export const extractResumeText = async (buffer: Buffer): Promise<string> => {
   const parsed = await pdfParse(buffer);
   return parsed.text;
@@ -10,24 +12,24 @@ export const extractResumeText = async (buffer: Buffer): Promise<string> => {
 export const processResume = async (
   clerkId: string,
   fileName: string,
-  buffer: Buffer
+  buffer: Buffer,
 ) => {
-  // Step 1: Extract text from PDF
+  //  Extract text from PDF
   const rawText = await extractResumeText(buffer);
 
-  // Step 2: Convert raw text into structured JSON using Gemini
+  //  Convert raw text into structured JSON using Gemini
   const structuredData = await extractStructuredResume(rawText);
 
   const bullets = buildBulletDocuments(structuredData);
 
+  const bulletsWithEmbeddings = await Promise.all(
+  bullets.map(async (bullet) => ({
+    ...bullet,
+    embedding: await generateEmbedding(bullet.text),
+  }))
+);
   //  Save everything to MongoDB
-  return await saveResume(
-    clerkId,
-    fileName,
-    rawText,
-    structuredData,
-    bullets
-  );
+  return await saveResume(clerkId, fileName, rawText, structuredData, bulletsWithEmbeddings,);
 };
 
 export const saveResume = async (
@@ -35,7 +37,7 @@ export const saveResume = async (
   fileName: string,
   rawText: string,
   structuredData: unknown,
-  bullets: unknown
+  bullets: ResumeBullet[],
 ) => {
   return Resume.findOneAndUpdate(
     { clerkId },
@@ -49,6 +51,6 @@ export const saveResume = async (
     {
       returnDocument: "after",
       upsert: true,
-    }
+    },
   );
 };

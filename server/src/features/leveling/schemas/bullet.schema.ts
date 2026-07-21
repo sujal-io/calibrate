@@ -12,6 +12,8 @@ export const ResumeBulletSchema = z.object({
   duration: z.string().optional(),
 
   text: z.string(),
+
+  embedding: z.array(z.number()).optional(),
 });
 
 export const ResumeBulletListSchema = z.array(ResumeBulletSchema);
