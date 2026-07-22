@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
-import { processResume } from "./resume.service.js";
+import {
+  processResume,
+  retrieveResumeContext,
+} from "./resume.service.js";
 
 export const uploadResume = async (
   req: Request,
@@ -42,6 +45,50 @@ export const uploadResume = async (
     res.status(500).json({
       success: false,
       message: "Upload failed.",
+    });
+  }
+};
+
+export const retrieveContext = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+
+    const { jobDescription } = req.body;
+
+    if (!jobDescription) {
+      res.status(400).json({
+        success: false,
+        message: "Job description is required.",
+      });
+      return;
+    }
+
+    const retrievedBullets = await retrieveResumeContext(
+      userId,
+      jobDescription,
+    );
+
+    res.status(200).json({
+      success: true,
+      retrievedBullets,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve resume context.",
     });
   }
 };
