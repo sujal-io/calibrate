@@ -4,8 +4,9 @@ import { clerkMiddleware } from "@clerk/express";
 import resumeRoutes from "./features/resume/resume.route.js";
 import jobDescriptionRoutes from "./features/job description/jobDescription.route.js";
 import calibratorRoutes from "./features/calibrator/calibrator.route.js";
-
+import rewriteRoutes from "./features/rewrite/rewrite.route.js";
 import cors from "cors";
+
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/job-description", jobDescriptionRoutes);
 app.use("/api/calibrator", calibratorRoutes);
+app.use("/api/rewrite", rewriteRoutes);
 
 app.get("/", (_req, res) => {
   res.send("Calibrate API is running");
