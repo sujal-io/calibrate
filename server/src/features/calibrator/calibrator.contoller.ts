@@ -1,10 +1,7 @@
 import { Request, Response } from "express";
-import { extractEvidence } from "./calibrator.service.js";
+import { calibrateSeniority, extractEvidence } from "./calibrator.service.js";
 
-export const calibrate = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const calibrate = async (req: Request, res: Response): Promise<void> => {
   try {
     const { bullets } = req.body;
 
@@ -16,10 +13,13 @@ export const calibrate = async (
       return;
     }
 
-    const result = await extractEvidence(bullets);
+    const evidence = await extractEvidence(bullets);
+
+    const result = await calibrateSeniority(evidence);
 
     res.status(200).json({
       success: true,
+      evidence,
       result,
     });
   } catch (error) {

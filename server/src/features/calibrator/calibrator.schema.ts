@@ -16,3 +16,24 @@ export const EvidenceExtractionSchema = z.object({
 export type EvidenceExtraction = z.infer<
   typeof EvidenceExtractionSchema
 >;
+
+export const CalibrationResultSchema = z.object({
+  level: z.enum([
+    "Intern",
+    "Junior",
+    "Mid-Level",
+    "Senior",
+    "Staff",
+  ]),
+
+confidence: z.number().min(0).max(100),
+  strengths: z.array(z.string()),
+
+  gaps: z.array(z.string()),
+
+  nextLevelSuggestions: z.array(z.string()),
+});
+
+export type CalibrationResult = z.infer<
+  typeof CalibrationResultSchema
+>;
