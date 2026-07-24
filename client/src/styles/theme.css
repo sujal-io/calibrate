@@ -1,0 +1,62 @@
+:root {
+
+  /* ===========================
+     FOUNDATION
+  ============================ */
+
+  --background: #F6F7F5;
+  --surface: #FFFFFF;
+  --surface-soft: #FBFBFA;
+
+  /* ===========================
+     TEXT
+  ============================ */
+
+  --text: #22252A;
+  --text-secondary: #6E747C;
+  --text-muted: #9AA0A6;
+
+  /* ===========================
+     BORDERS
+  ============================ */
+
+  --border: #E4E6E3;
+  --border-strong: #D7DAD6;
+
+  /* ===========================
+     BRAND
+  ============================ */
+
+  --accent: #315EED;
+  --accent-hover: #2549BE;
+  --accent-soft: #EDF2FF;
+
+  /* ===========================
+     SEMANTIC
+  ============================ */
+
+  --evidence: #C88A2A;
+  --evidence-soft: #FFF7E7;
+
+  --success: #2E7D5A;
+  --success-soft: #ECF8F1;
+
+  --warning: #D97706;
+  --danger: #C53B3B;
+
+  /* ===========================
+     LAYOUT
+  ============================ */
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  --shadow-sm:
+      0 1px 2px rgba(0,0,0,.04);
+
+  --shadow-md:
+      0 8px 30px rgba(0,0,0,.05);
+
+}

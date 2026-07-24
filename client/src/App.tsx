@@ -1,84 +1,18 @@
-import {
-  SignedIn,
-  SignedOut,
-  SignIn,
-  UserButton,
-  useAuth,
-} from "@clerk/clerk-react";
-
-import { useEffect } from "react";
-import api from "./lib/api";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import Landing from "./pages/Landing";
+import Workspace from "./pages/Workspace";
 
 function App() {
-  const { isSignedIn, getToken } = useAuth();
-
-  useEffect(() => {
-    const syncUser = async () => {
-      if (!isSignedIn) return;
-
-      try {
-        const token = await getToken();
-        console.log(token);
-    
-        await api.post(
-          "/auth/sync",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
-
-        console.log("User Synced");
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    syncUser();
-  }, [isSignedIn, getToken]);
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <>
       <SignedOut>
-        <SignIn />
+        <Landing />
       </SignedOut>
 
       <SignedIn>
-        <div className="space-y-4 text-center">
-          <h1 className="text-3xl font-bold">Calibrate</h1>
-
-          <UserButton />
-
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-
-              if (!file) return;
-
-              const token = await getToken();
-
-              const formData = new FormData();
-              formData.append("resume", file);
-
-              try {
-                const response = await api.post("/resume/upload", formData, {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                });
-
-                console.log(response.data);
-              } catch (err) {
-                console.error(err);
-              }
-            }}
-          />
-        </div>
+        <Workspace />
       </SignedIn>
-    </div>
+    </>
   );
 }
 
