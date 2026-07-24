@@ -1,27 +1,75 @@
 import { useState } from "react";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import ResumeUpload from "../components/ResumeUpload";
 import JobDescriptionInput from "../components/JobDescriptionInput";
-import { UserButton } from "@clerk/clerk-react";
+import { UserButton, useAuth } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
+
+import {uploadResume,analyzeJobDescription,retrieveContext,calibrateResume} from "../services/calibration";
 
 const Workspace = () => {
+  const { getToken } = useAuth();
+  const navigate = useNavigate();
   const [resume, setResume] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const canCalibrate = resume !== null && jobDescription.trim().length > 0;
+  const canCalibrate =
+    !isLoading &&
+    resume !== null &&
+    jobDescription.trim().length > 0;
 
-  const handleCalibrate = () => {
-    console.log({
-      resume,
+  const handleCalibrate = async () => {
+  if (!resume) return;
+
+  try {
+    setIsLoading(true);
+
+    const token = await getToken();
+
+    if (!token) {
+      throw new Error("Unable to authenticate user.");
+    }
+
+    await uploadResume(resume, token);
+
+    const analysis = await analyzeJobDescription(
       jobDescription,
-    });
+      token,
+    );
 
-    // Commit 3
-    // Upload Resume
-    // Analyze JD
-    // Retrieve Resume
-    // Generate Calibration
-  };
+    const context = await retrieveContext(
+      jobDescription,
+      token,
+    );
+
+    const bullets = context.retrievedBullets.map(
+  (bullet: { text: string }) => bullet.text,
+);
+
+const calibration = await calibrateResume(
+  bullets,
+  token,
+);
+
+    console.log("Analysis:", analysis);
+console.log("Context:", context);
+console.log("Calibration:", calibration);
+
+    navigate("/results", {
+      state: {
+        analysis,
+        context,
+        calibration,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    alert("Failed to generate calibration report.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -33,7 +81,7 @@ const Workspace = () => {
             <h2 className="text-xl font-semibold">Calibrate</h2>
 
             <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--text-secondary)]">
-              AI Application Strategist
+              AI APPLICATION STRATEGIST
             </p>
           </div>
 
@@ -65,25 +113,25 @@ const Workspace = () => {
             </h1>
 
             <p className="mt-4 text-[17px] leading-8 text-[var(--text-secondary)]">
-              Upload your resume and paste the job description. Calibrate will
-              compare both documents and generate evidence-backed
-              recommendations before you apply.
+              Upload your resume and paste the job description.
+              Calibrate will compare both documents and generate
+              evidence-backed recommendations before you apply.
             </p>
           </div>
-
-          {/* Primary Action */}
 
           <div className="flex shrink-0 lg:pt-10">
             <button
               disabled={!canCalibrate}
               onClick={handleCalibrate}
               className={`primary-btn px-8 py-4 text-base ${
-                !canCalibrate ? "cursor-not-allowed opacity-50" : ""
+                !canCalibrate
+                  ? "cursor-not-allowed opacity-50"
+                  : ""
               }`}
             >
-              
-              Calibrate
-              <ArrowRight size={18} />
+              {isLoading ? "Analyzing..." : "Calibrate"}
+
+              {!isLoading && <ArrowRight size={18} />}
             </button>
           </div>
         </div>
@@ -91,11 +139,10 @@ const Workspace = () => {
         {/* Workspace */}
 
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          {/* Left */}
-
-          <ResumeUpload file={resume} setFile={setResume} />
-
-          {/* Right */}
+          <ResumeUpload
+            file={resume}
+            setFile={setResume}
+          />
 
           <JobDescriptionInput
             value={jobDescription}

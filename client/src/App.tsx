@@ -1,19 +1,48 @@
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import {
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+
+import {
+  SignedIn,
+  SignedOut,
+} from "@clerk/clerk-react";
+
 import Landing from "./pages/Landing";
 import Workspace from "./pages/Workspace";
+import Results from "./pages/Result";
 
-function App() {
+export default function App() {
   return (
     <>
       <SignedOut>
-        <Landing />
+        <Routes>
+          <Route
+            path="*"
+            element={<Landing />}
+          />
+        </Routes>
       </SignedOut>
 
       <SignedIn>
-        <Workspace />
+        <Routes>
+          <Route
+            path="/"
+            element={<Workspace />}
+          />
+
+          <Route
+            path="/results"
+            element={<Results />}
+          />
+
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
+          />
+        </Routes>
       </SignedIn>
     </>
   );
 }
-
-export default App;
