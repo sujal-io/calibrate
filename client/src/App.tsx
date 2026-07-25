@@ -9,11 +9,20 @@ import {
   SignedOut,
 } from "@clerk/clerk-react";
 
+import { useEffect, useState } from "react";
+
 import Landing from "./pages/Landing";
 import Workspace from "./pages/Workspace";
 import Results from "./pages/Result";
 
 export default function App() {
+  const [hasSavedCalibration, setHasSavedCalibration] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("latest-calibration");
+    setHasSavedCalibration(!!saved);
+  }, []);
+
   return (
     <>
       <SignedOut>
@@ -39,7 +48,7 @@ export default function App() {
 
           <Route
             path="*"
-            element={<Navigate to="/" replace />}
+            element={<Navigate to={hasSavedCalibration ? "/results" : "/"} replace />}
           />
         </Routes>
       </SignedIn>

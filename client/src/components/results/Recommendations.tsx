@@ -14,7 +14,7 @@ const Recommendations = ({ recommendations }: Props) => {
     <section className="mt-12">
       <div className="surface-elevated rounded-[30px] p-10">
         <p className="label">
-          AI RECOMMENDATIONS
+          RECOMMENDATIONS
         </p>
 
         <h2
@@ -30,7 +30,7 @@ const Recommendations = ({ recommendations }: Props) => {
           {recommendations.summary}
         </p>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+        <div className="mt-10 grid gap-6 lg:grid-cols-1">
 
           {/* Strengths */}
 
@@ -39,15 +39,14 @@ const Recommendations = ({ recommendations }: Props) => {
               Strengths
             </h3>
 
-            <ul className="mt-5 space-y-4">
+            <ul className="mt-5 space-y-4 lg:flex lg:flex-wrap lg:gap-3">
               {recommendations.strengths.map((item) => (
                 <li
                   key={item}
-                  className="flex gap-3"
+                  className="flex gap-3 lg:flex lg:items-center lg:gap-2 lg:rounded-full lg:border lg:border-[var(--border)] lg:bg-[var(--background)] lg:px-4 lg:py-2 lg:text-sm"
                 >
-                  <span className="mt-2 h-2 w-2 rounded-full bg-green-500" />
-
-                  <span className="leading-7">
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500 lg:mt-0 lg:h-1.5 lg:w-1.5" />
+                  <span className="leading-7 lg:leading-5">
                     {item}
                   </span>
                 </li>
@@ -62,15 +61,14 @@ const Recommendations = ({ recommendations }: Props) => {
               Improvements
             </h3>
 
-            <ul className="mt-5 space-y-4">
+            <ul className="mt-5 space-y-4 lg:flex lg:flex-wrap lg:gap-3">
               {recommendations.improvements.map((item) => (
                 <li
                   key={item}
-                  className="flex gap-3"
+                  className="flex gap-3 lg:flex lg:items-center lg:gap-2 lg:rounded-full lg:border lg:border-[var(--border)] lg:bg-[var(--background)] lg:px-4 lg:py-2 lg:text-sm"
                 >
-                  <span className="mt-2 h-2 w-2 rounded-full bg-amber-500" />
-
-                  <span className="leading-7">
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-amber-500 lg:mt-0 lg:h-1.5 lg:w-1.5" />
+                  <span className="leading-7 lg:leading-5">
                     {item}
                   </span>
                 </li>
@@ -85,15 +83,14 @@ const Recommendations = ({ recommendations }: Props) => {
               Recommended Projects
             </h3>
 
-            <ul className="mt-5 space-y-4">
+            <ul className="mt-5 space-y-4 lg:flex lg:flex-wrap lg:gap-3">
               {recommendations.recommendedProjects.map((item) => (
                 <li
                   key={item}
-                  className="flex gap-3"
+                  className="flex gap-3 lg:flex lg:items-center lg:gap-2 lg:rounded-full lg:border lg:border-[var(--border)] lg:bg-[var(--background)] lg:px-4 lg:py-2 lg:text-sm"
                 >
-                  <span className="mt-2 h-2 w-2 rounded-full bg-blue-500" />
-
-                  <span className="leading-7">
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500 lg:mt-0 lg:h-1.5 lg:w-1.5" />
+                  <span className="leading-7 lg:leading-5">
                     {item}
                   </span>
                 </li>

@@ -5,7 +5,12 @@ import JobDescriptionInput from "../components/JobDescriptionInput";
 import { UserButton, useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 
-import {uploadResume,analyzeJobDescription,retrieveContext,calibrateResume} from "../services/calibration";
+import {
+  uploadResume,
+  analyzeJobDescription,
+  retrieveContext,
+  calibrateResume,
+} from "../services/calibration";
 
 const Workspace = () => {
   const { getToken } = useAuth();
@@ -15,61 +20,55 @@ const Workspace = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const canCalibrate =
-    !isLoading &&
-    resume !== null &&
-    jobDescription.trim().length > 0;
+    !isLoading && resume !== null && jobDescription.trim().length > 0;
 
   const handleCalibrate = async () => {
-  if (!resume) return;
+    if (!resume) return;
 
-  try {
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    const token = await getToken();
+      const token = await getToken();
 
-    if (!token) {
-      throw new Error("Unable to authenticate user.");
+      if (!token) {
+        throw new Error("Unable to authenticate user.");
+      }
+
+      await uploadResume(resume, token);
+
+      const analysis = await analyzeJobDescription(jobDescription, token);
+
+      const context = await retrieveContext(jobDescription, token);
+
+      const bullets = context.retrievedBullets.map(
+        (bullet: { text: string }) => bullet.text,
+      );
+
+      const calibration = await calibrateResume(bullets, token);
+
+      localStorage.setItem(
+        "latest-calibration",
+        JSON.stringify({
+          analysis,
+          context,
+          calibration,
+        }),
+      );
+
+      navigate("/results", {
+        state: {
+          analysis,
+          context,
+          calibration,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      alert("Failed to generate calibration report.");
+    } finally {
+      setIsLoading(false);
     }
-
-    await uploadResume(resume, token);
-
-    const analysis = await analyzeJobDescription(
-      jobDescription,
-      token,
-    );
-
-    const context = await retrieveContext(
-      jobDescription,
-      token,
-    );
-
-    const bullets = context.retrievedBullets.map(
-  (bullet: { text: string }) => bullet.text,
-);
-
-const calibration = await calibrateResume(
-  bullets,
-  token,
-);
-
-    console.log("Analysis:", analysis);
-console.log("Context:", context);
-console.log("Calibration:", calibration);
-
-    navigate("/results", {
-      state: {
-        analysis,
-        context,
-        calibration,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    alert("Failed to generate calibration report.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -88,8 +87,7 @@ console.log("Calibration:", calibration);
           <UserButton
             appearance={{
               elements: {
-                avatarBox:
-                  "h-11 w-11 ring-1 ring-[var(--border)] shadow-sm",
+                avatarBox: "h-11 w-11 ring-1 ring-[var(--border)] shadow-sm",
               },
             }}
           />
@@ -113,9 +111,9 @@ console.log("Calibration:", calibration);
             </h1>
 
             <p className="mt-4 text-[17px] leading-8 text-[var(--text-secondary)]">
-              Upload your resume and paste the job description.
-              Calibrate will compare both documents and generate
-              evidence-backed recommendations before you apply.
+              Upload your resume and paste the job description. Calibrate will
+              compare both documents and generate evidence-backed
+              recommendations before you apply.
             </p>
           </div>
 
@@ -124,9 +122,7 @@ console.log("Calibration:", calibration);
               disabled={!canCalibrate}
               onClick={handleCalibrate}
               className={`primary-btn px-8 py-4 text-base ${
-                !canCalibrate
-                  ? "cursor-not-allowed opacity-50"
-                  : ""
+                !canCalibrate ? "cursor-not-allowed opacity-50" : ""
               }`}
             >
               {isLoading ? "Analyzing..." : "Calibrate"}
@@ -139,10 +135,7 @@ console.log("Calibration:", calibration);
         {/* Workspace */}
 
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <ResumeUpload
-            file={resume}
-            setFile={setResume}
-          />
+          <ResumeUpload file={resume} setFile={setResume} />
 
           <JobDescriptionInput
             value={jobDescription}

@@ -107,7 +107,7 @@ const MatchOverview = ({
 
       {/* Skills Lists */}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-1">
 
         <div className="surface-elevated rounded-[26px] p-7">
           <h3 className="text-lg font-semibold">

@@ -47,7 +47,7 @@ const SeniorityCard = ({ result }: Props) => {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+        <div className="mt-10 grid gap-6 lg:grid-cols-1">
 
           {/* Strengths */}
 
@@ -56,15 +56,15 @@ const SeniorityCard = ({ result }: Props) => {
               Strengths
             </h3>
 
-            <ul className="mt-5 space-y-4">
+            <ul className="mt-5 space-y-4 lg:flex lg:flex-wrap lg:gap-3">
               {result.strengths.map((item) => (
                 <li
                   key={item}
-                  className="flex gap-3"
+                  className="flex gap-3 lg:flex lg:items-center lg:gap-2 lg:rounded-full lg:border lg:border-[var(--border)] lg:bg-[var(--background)] lg:px-4 lg:py-2 lg:text-sm"
                 >
-                  <span className="mt-2 h-2 w-2 rounded-full bg-green-500" />
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500 lg:mt-0 lg:h-1.5 lg:w-1.5" />
 
-                  <span className="leading-7">
+                  <span className="leading-7 lg:leading-5">
                     {item}
                   </span>
                 </li>
@@ -79,15 +79,15 @@ const SeniorityCard = ({ result }: Props) => {
               Gaps
             </h3>
 
-            <ul className="mt-5 space-y-4">
+            <ul className="mt-5 space-y-4 lg:flex lg:flex-wrap lg:gap-3">
               {result.gaps.map((item) => (
                 <li
                   key={item}
-                  className="flex gap-3"
+                  className="flex gap-3 lg:flex lg:items-center lg:gap-2 lg:rounded-full lg:border lg:border-[var(--border)] lg:bg-[var(--background)] lg:px-4 lg:py-2 lg:text-sm"
                 >
-                  <span className="mt-2 h-2 w-2 rounded-full bg-red-500" />
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-red-500 lg:mt-0 lg:h-1.5 lg:w-1.5" />
 
-                  <span className="leading-7">
+                  <span className="leading-7 lg:leading-5">
                     {item}
                   </span>
                 </li>
@@ -102,15 +102,15 @@ const SeniorityCard = ({ result }: Props) => {
               Next Level Suggestions
             </h3>
 
-            <ul className="mt-5 space-y-4">
+            <ul className="mt-5 space-y-4 lg:flex lg:flex-wrap lg:gap-3">
               {result.nextLevelSuggestions.map((item) => (
                 <li
                   key={item}
-                  className="flex gap-3"
+                  className="flex gap-3 lg:flex lg:items-center lg:gap-2 lg:rounded-full lg:border lg:border-[var(--border)] lg:bg-[var(--background)] lg:px-4 lg:py-2 lg:text-sm"
                 >
-                  <span className="mt-2 h-2 w-2 rounded-full bg-[var(--accent)]" />
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[var(--accent)] lg:mt-0 lg:h-1.5 lg:w-1.5" />
 
-                  <span className="leading-7">
+                  <span className="leading-7 lg:leading-5">
                     {item}
                   </span>
                 </li>

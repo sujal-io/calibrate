@@ -63,7 +63,7 @@ const EvidenceBreakdown = ({ evidence }: Props) => {
             return (
               <div
                 key={category.key}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)] p-7"
+                className="rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-5"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
@@ -77,12 +77,12 @@ const EvidenceBreakdown = ({ evidence }: Props) => {
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-[var(--border)] bg-white px-5 py-4 text-center">
+                  <div className="rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-center">
                     <p className="label">
                       SCORE
                     </p>
 
-                    <h4 className="mt-2 text-3xl font-semibold">
+                    <h4 className="mt-2 text-2xl font-semibold">
                       {item.score}/{item.maxScore}
                     </h4>
                   </div>
@@ -91,8 +91,8 @@ const EvidenceBreakdown = ({ evidence }: Props) => {
 
                 {/* Progress */}
 
-                <div className="mt-6">
-                  <div className="h-3 overflow-hidden rounded-full bg-[var(--border)]">
+                <div className="mt-5">
+                  <div className="h-2 overflow-hidden rounded-full bg-[var(--border)]">
                     <div
                       className="h-full rounded-full bg-[var(--accent)] transition-all duration-700"
                       style={{
@@ -104,12 +104,12 @@ const EvidenceBreakdown = ({ evidence }: Props) => {
 
                 {/* Evidence */}
 
-                <div className="mt-8">
+                <div className="mt-6">
                   <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)]">
                     Supporting Evidence
                   </h4>
 
-                  <ul className="mt-5 space-y-4">
+                  <ul className="mt-4 space-y-3">
                     {item.evidence.map((point, index) => (
                       <li
                         key={index}
@@ -117,7 +117,7 @@ const EvidenceBreakdown = ({ evidence }: Props) => {
                       >
                         <span className="mt-2 h-2 w-2 rounded-full bg-[var(--accent)]" />
 
-                        <span className="leading-7">
+                        <span className="leading-6">
                           {point}
                         </span>
                       </li>

@@ -1,20 +1,74 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { useNavigate, Navigate, useLocation } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
+import { ArrowRight } from "lucide-react";
 
+import ResultsSidebar from "../components/results/ResultSidebar";
+import BottomNav from "../components/results/BottomNav";
 import MatchOverview from "../components/results/MatchOverview";
 import Recommendations from "../components/results/Recommendations";
 import EvidenceList from "../components/results/EvidenceList";
 import SeniorityCard from "../components/results/SeniorityCard";
 import EvidenceBreakdown from "../components/results/EvidenceBreakdown";
+import { useState, useEffect } from "react";
 
 const Results = () => {
+  const navigate = useNavigate();
   const { state } = useLocation();
+  const [activeSection, setActiveSection] = useState("overview");
 
-  if (!state) {
+  useEffect(() => {
+    const sections = ["overview", "recommendations", "evidence", "seniority", "breakdown"];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      {
+        threshold: 0.15,
+        rootMargin: "-80px 0px -50% 0px",
+      }
+    );
+
+    sections.forEach((sectionId) => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    return () => {
+      sections.forEach((sectionId) => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          observer.unobserve(element);
+        }
+      });
+    };
+  }, []);
+
+  const report =
+    state ??
+    (() => {
+      const saved = localStorage.getItem("latest-calibration");
+
+      return saved ? JSON.parse(saved) : null;
+    })();
+
+  if (!report) {
     return <Navigate to="/" replace />;
   }
 
-  const { analysis, context, calibration } = state;
+  const { analysis, context, calibration } = report;
+
+  const handleNewCalibration = () => {
+    localStorage.removeItem("latest-calibration");
+
+    navigate("/");
+  };
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
@@ -40,54 +94,107 @@ const Results = () => {
         </div>
       </header>
 
-      <section className="mx-auto max-w-[1200px] px-8 py-10">
+      <section className="mx-auto max-w-[1350px] px-8 pt-10">
         {/* Hero */}
 
-        <div className="mb-10">
-          <p className="label">CALIBRATION REPORT</p>
+        <div className="mb-8 grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start">
+          {/* Left */}
 
-          <h1
-            className="mt-3 text-5xl tracking-[-0.04em]"
-            style={{
-              fontFamily: '"DM Serif Display", serif',
-            }}
-          >
-            Your application analysis.
-          </h1>
+          <div>
+            <p className="label">CALIBRATION REPORT</p>
 
-          <p className="mt-4 max-w-[720px] text-[17px] leading-8 text-[var(--text-secondary)]">
-            We analyzed your resume against the supplied job description and
-            generated a detailed report with evidence, recommendations and
-            seniority insights.
-          </p>
+            <h1
+              className="mt-3 text-5xl tracking-[-0.04em]"
+              style={{
+                fontFamily: '"DM Serif Display", serif',
+              }}
+            >
+              Your application analysis.
+            </h1>
+
+            <p className="mt-4 max-w-[720px] text-[17px] leading-8 text-[var(--text-secondary)]">
+              We analyzed your resume against the supplied job description and
+              generated a complete report with evidence, recommendations and
+              seniority insights.
+            </p>
+          </div>
+
+          {/* Right */}
+
+          <div className="surface-elevated rounded-[30px] p-5">
+
+            <h3
+              className="text-2xl"
+              style={{
+                fontFamily: '"DM Serif Display", serif',
+              }}
+            >
+              Ready for another calibration?
+            </h3>
+
+            <p className="mt-1 leading-7 text-[var(--text-secondary)]">
+              Upload another resume or compare a different job description.
+            </p>
+
+            <button
+              onClick={handleNewCalibration}
+              className="primary-btn mt-5 w-full"
+            >
+              New Calibration
+              <ArrowRight size={18} />
+            </button>
+          </div>
         </div>
 
-        {/* Overall Match */}
+        {/* Layout */}
 
-        <MatchOverview
-          matchResult={analysis.data.matchResult}
-          calibration={calibration.result}
-        />
+        <div className="grid gap-10 lg:grid-cols-[260px_1fr]">
+          {/* Sidebar */}
 
-        {/* Recommendations */}
+          <ResultsSidebar
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+          />
+          {/* Content */}
 
-        <Recommendations recommendations={analysis.data.recommendations} />
+          <div className="space-y-14 pb-20 lg:pb-0">
+            <section id="overview">
+              <MatchOverview
+                matchResult={analysis.data.matchResult}
+                calibration={calibration.result}
+              />
+            </section>
 
-        {/* Retrieved Evidence */}
+            <section id="recommendations">
+              <Recommendations
+                recommendations={analysis.data.recommendations}
+              />
+            </section>
 
-        <EvidenceList
-          bullets={context.retrievedBullets}
-          structuredJobDescription={analysis.data.structuredJobDescription}
-        />
+            <section id="evidence">
+              <EvidenceList
+                bullets={context.retrievedBullets}
+                structuredJobDescription={
+                  analysis.data.structuredJobDescription
+                }
+              />
+            </section>
 
-        {/* Seniority */}
+            <section id="seniority">
+              <SeniorityCard result={calibration.result} />
+            </section>
 
-        <SeniorityCard result={calibration.result} />
-
-        {/* Evidence */}
-
-        <EvidenceBreakdown evidence={calibration.evidence} />
+            <section id="breakdown">
+              <EvidenceBreakdown evidence={calibration.evidence} />
+            </section>
+          </div>
+        </div>
       </section>
+
+      <BottomNav
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+      />
     </main>
   );
 };
