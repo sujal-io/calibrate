@@ -19,11 +19,11 @@ export type EvidenceExtraction = z.infer<
 
 export const CalibrationResultSchema = z.object({
   level: z.enum([
-    "Intern",
-    "Junior",
-    "Mid-Level",
-    "Senior",
-    "Staff",
+    "Intern-level",
+    "Junior-level",
+    "Mid-level",
+    "Senior-level",
+    "Staff-level",
   ]),
 
 confidence: z.number().min(0).max(100),

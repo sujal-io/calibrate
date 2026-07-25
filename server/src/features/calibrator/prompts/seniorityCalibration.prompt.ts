@@ -7,11 +7,11 @@ Determine the most appropriate seniority level.
 
 Possible levels:
 
-- Intern
-- Junior
-- Mid-Level
-- Senior
-- Staff
+- Intern-level
+- Junior-level
+- Mid-level
+- Senior-level
+- Staff-level
 
 Base your decision ONLY on:
 

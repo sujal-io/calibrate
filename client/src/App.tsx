@@ -1,85 +1,38 @@
-import {
-  SignedIn,
-  SignedOut,
-  SignIn,
-  UserButton,
-  useAuth,
-} from "@clerk/clerk-react";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-import { useEffect } from "react";
-import api from "./lib/api";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
-function App() {
-  const { isSignedIn, getToken } = useAuth();
+import { ToastProvider } from "./components/ui/Toast";
+import { AuthStatusToasts } from "./components/AuthStatusToasts";
 
-  useEffect(() => {
-    const syncUser = async () => {
-      if (!isSignedIn) return;
+import Landing from "./pages/Landing";
+import Workspace from "./pages/Workspace";
+import Results from "./pages/Result";
 
-      try {
-        const token = await getToken();
-        console.log(token);
-    
-        await api.post(
-          "/auth/sync",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
+export default function App() {
+  // const hasSavedCalibration =
+  //   typeof window !== "undefined" &&
+  //   !!localStorage.getItem("latest-calibration");
 
-        console.log("User Synced");
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    syncUser();
-  }, [isSignedIn, getToken]);
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <ToastProvider>
+      <AuthStatusToasts />
+
       <SignedOut>
-        <SignIn />
+        <Routes>
+          <Route path="*" element={<Landing />} />
+        </Routes>
       </SignedOut>
 
       <SignedIn>
-        <div className="space-y-4 text-center">
-          <h1 className="text-3xl font-bold">Calibrate</h1>
+        <Routes>
+          <Route path="/" element={<Workspace />} />
 
-          <UserButton />
+          <Route path="/results" element={<Results />} />
 
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-
-              if (!file) return;
-
-              const token = await getToken();
-
-              const formData = new FormData();
-              formData.append("resume", file);
-
-              try {
-                const response = await api.post("/resume/upload", formData, {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                });
-
-                console.log(response.data);
-              } catch (err) {
-                console.error(err);
-              }
-            }}
-          />
-        </div>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </SignedIn>
-    </div>
+    </ToastProvider>
   );
 }
-
-export default App;
