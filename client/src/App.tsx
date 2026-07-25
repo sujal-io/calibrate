@@ -1,57 +1,38 @@
-import {
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-import {
-  SignedIn,
-  SignedOut,
-} from "@clerk/clerk-react";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
-import { useEffect, useState } from "react";
+import { ToastProvider } from "./components/ui/Toast";
+import { AuthStatusToasts } from "./components/AuthStatusToasts";
 
 import Landing from "./pages/Landing";
 import Workspace from "./pages/Workspace";
 import Results from "./pages/Result";
 
 export default function App() {
-  const [hasSavedCalibration, setHasSavedCalibration] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("latest-calibration");
-    setHasSavedCalibration(!!saved);
-  }, []);
+  // const hasSavedCalibration =
+  //   typeof window !== "undefined" &&
+  //   !!localStorage.getItem("latest-calibration");
 
   return (
-    <>
+    <ToastProvider>
+      <AuthStatusToasts />
+
       <SignedOut>
         <Routes>
-          <Route
-            path="*"
-            element={<Landing />}
-          />
+          <Route path="*" element={<Landing />} />
         </Routes>
       </SignedOut>
 
       <SignedIn>
         <Routes>
-          <Route
-            path="/"
-            element={<Workspace />}
-          />
+          <Route path="/" element={<Workspace />} />
 
-          <Route
-            path="/results"
-            element={<Results />}
-          />
+          <Route path="/results" element={<Results />} />
 
-          <Route
-            path="*"
-            element={<Navigate to={hasSavedCalibration ? "/results" : "/"} replace />}
-          />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </SignedIn>
-    </>
+    </ToastProvider>
   );
 }

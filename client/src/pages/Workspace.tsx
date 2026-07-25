@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { useState, useRef } from "react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import ResumeUpload from "../components/ResumeUpload";
 import JobDescriptionInput from "../components/JobDescriptionInput";
 import { UserButton, useAuth } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import {
   uploadResume,
@@ -11,40 +11,92 @@ import {
   retrieveContext,
   calibrateResume,
 } from "../services/calibration";
+import { useToast } from "../hooks/useToast";
 
 const Workspace = () => {
   const { getToken } = useAuth();
   const navigate = useNavigate();
+  const { show } = useToast();
   const [resume, setResume] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const isLoadingRef = useRef(false);
+
+  const hasSavedCalibration =
+  typeof window !== "undefined" &&
+  !!localStorage.getItem("latest-calibration");
+
+if (hasSavedCalibration) {
+  return <Navigate to="/results" replace />;
+}
 
   const canCalibrate =
     !isLoading && resume !== null && jobDescription.trim().length > 0;
 
   const handleCalibrate = async () => {
     if (!resume) return;
+    if (isLoadingRef.current) return;
 
     try {
+      isLoadingRef.current = true;
       setIsLoading(true);
 
       const token = await getToken();
 
       if (!token) {
-        throw new Error("Unable to authenticate user.");
+        show({
+          message: "Please sign in to continue.",
+          type: "warning",
+        });
+        return;
       }
 
-      await uploadResume(resume, token);
+      try {
+        await uploadResume(resume, token);
+      } catch {
+        show({
+          message: "Couldn't upload your resume. Please try again.",
+          type: "error",
+        });
+        return;
+      }
 
-      const analysis = await analyzeJobDescription(jobDescription, token);
+      let analysis;
+      try {
+        analysis = await analyzeJobDescription(jobDescription, token);
+      } catch {
+        show({
+          message: "Couldn't analyze that job description. Please try again.",
+          type: "error",
+        });
+        return;
+      }
 
-      const context = await retrieveContext(jobDescription, token);
+      let context;
+      try {
+        context = await retrieveContext(jobDescription, token);
+      } catch {
+        show({
+          message: "Couldn't match your resume. Please try again.",
+          type: "error",
+        });
+        return;
+      }
 
       const bullets = context.retrievedBullets.map(
         (bullet: { text: string }) => bullet.text,
       );
 
-      const calibration = await calibrateResume(bullets, token);
+      let calibration;
+      try {
+        calibration = await calibrateResume(bullets, token);
+      } catch {
+        show({
+          message: "Couldn't calibrate. Please try again in a moment.",
+          type: "error",
+        });
+        return;
+      }
 
       localStorage.setItem(
         "latest-calibration",
@@ -55,6 +107,12 @@ const Workspace = () => {
         }),
       );
 
+      show({
+        message: "Calibration complete. Showing results...",
+        type: "success",
+        duration: 2500,
+      });
+
       navigate("/results", {
         state: {
           analysis,
@@ -62,11 +120,14 @@ const Workspace = () => {
           calibration,
         },
       });
-    } catch (error) {
-      console.error(error);
-      alert("Failed to generate calibration report.");
+    } catch {
+      show({
+        message: "Something went wrong. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false;
     }
   };
 
@@ -119,15 +180,29 @@ const Workspace = () => {
 
           <div className="flex shrink-0 lg:pt-10">
             <button
+              type="button"
               disabled={!canCalibrate}
+              aria-disabled={!canCalibrate}
               onClick={handleCalibrate}
-              className={`primary-btn px-8 py-4 text-base ${
+              className={`primary-btn px-8 py-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 ${
                 !canCalibrate ? "cursor-not-allowed opacity-50" : ""
               }`}
             >
-              {isLoading ? "Analyzing..." : "Calibrate"}
-
-              {!isLoading && <ArrowRight size={18} />}
+              {isLoading ? (
+                <>
+                  <Loader2
+                    size={18}
+                    className="animate-spin"
+                    aria-hidden="true"
+                  />
+                  Calibrating...
+                </>
+              ) : (
+                <>
+                  Calibrate
+                  <ArrowRight size={18} aria-hidden="true" />
+                </>
+              )}
             </button>
           </div>
         </div>

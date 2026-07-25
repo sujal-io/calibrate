@@ -1,11 +1,13 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   Upload,
   FileText,
   CheckCircle2,
   RefreshCcw,
+  AlertCircle,
 } from "lucide-react";
+import { useToast } from "../hooks/useToast";
 
 type Props = {
   file: File | null;
@@ -14,15 +16,20 @@ type Props = {
 
 const ResumeUpload = ({ file, setFile }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [formatError, setFormatError] = useState<string | null>(null);
+  const { show } = useToast();
 
   const handleFile = (selectedFile: File | null) => {
     if (!selectedFile) return;
 
     if (selectedFile.type !== "application/pdf") {
-      alert("Please upload a PDF resume.");
+      const message = "Please upload a PDF resume.";
+      setFormatError(message);
+      show({ message, type: "warning" });
       return;
     }
 
+    setFormatError(null);
     setFile(selectedFile);
   };
 
@@ -48,7 +55,16 @@ const ResumeUpload = ({ file, setFile }: Props) => {
 
         {!file ? (
           <div
+            role="button"
+            tabIndex={0}
+            aria-label="Upload resume PDF. Drag and drop or click to browse."
             onClick={() => inputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                inputRef.current?.click();
+              }
+            }}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();
@@ -64,6 +80,10 @@ const ResumeUpload = ({ file, setFile }: Props) => {
               p-7
               transition
               hover:border-[var(--accent)]
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-[var(--accent)]
+              focus-visible:ring-offset-2
             "
           >
             <div className="flex flex-col items-center text-center">
@@ -72,6 +92,7 @@ const ResumeUpload = ({ file, setFile }: Props) => {
                 <Upload
                   size={24}
                   className="text-[var(--accent)]"
+                  aria-hidden="true"
                 />
               </div>
 
@@ -86,6 +107,11 @@ const ResumeUpload = ({ file, setFile }: Props) => {
               <button
                 type="button"
                 className="secondary-btn mt-4"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  inputRef.current?.click();
+                }}
+                tabIndex={-1}
               >
                 Choose File
               </button>
@@ -103,6 +129,7 @@ const ResumeUpload = ({ file, setFile }: Props) => {
                   <CheckCircle2
                     size={22}
                     className="text-[var(--success)]"
+                    aria-hidden="true"
                   />
                 </div>
 
@@ -111,10 +138,11 @@ const ResumeUpload = ({ file, setFile }: Props) => {
                   <div className="flex items-center gap-2">
                     <FileText
                       size={18}
-                      className="text-[var(--accent)]"
+                      className="text-[var(--accent)] shrink-0"
+                      aria-hidden="true"
                     />
 
-                    <p className="truncate font-medium">
+                    <p className="truncate font-medium" title={file.name}>
                       {file.name}
                     </p>
                   </div>
@@ -130,10 +158,11 @@ const ResumeUpload = ({ file, setFile }: Props) => {
             </div>
 
             <button
+              type="button"
               onClick={() => inputRef.current?.click()}
-              className="secondary-btn w-full justify-center"
+              className="secondary-btn w-full justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
             >
-              <RefreshCcw size={16} />
+              <RefreshCcw size={16} aria-hidden="true" />
 
               Replace Resume
             </button>
@@ -141,11 +170,28 @@ const ResumeUpload = ({ file, setFile }: Props) => {
           </div>
         )}
 
+        {formatError && (
+          <div
+            role="alert"
+            className="mt-4 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4"
+          >
+            <AlertCircle
+              size={18}
+              className="mt-0.5 shrink-0 text-[var(--danger)]"
+              aria-hidden="true"
+            />
+            <p className="text-sm leading-6 text-[var(--danger)]">
+              {formatError}
+            </p>
+          </div>
+        )}
+
         <input
           ref={inputRef}
           hidden
           type="file"
-          accept=".pdf"
+          accept=".pdf,application/pdf"
+          aria-label="Upload resume PDF file"
           onChange={(e) =>
             handleFile(e.target.files?.[0] ?? null)
           }

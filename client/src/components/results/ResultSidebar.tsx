@@ -1,34 +1,13 @@
+import { REPORT_SECTIONS } from "../../lib/sections";
+
 type Props = {
   activeSection: string;
   onSectionChange: (section: string) => void;
 };
 
-const sections = [
-  {
-    id: "overview",
-    label: "Overview",
-  },
-  {
-    id: "recommendations",
-    label: "Recommendations",
-  },
-  {
-    id: "evidence",
-    label: "Evidence",
-  },
-  {
-    id: "seniority",
-    label: "Seniority",
-  },
-  {
-    id: "breakdown",
-    label: "Breakdown",
-  },
-];
-
 const ResultsSidebar = ({ activeSection, onSectionChange }: Props) => {
   return (
-    <aside className="sticky top-28 hidden h-fit lg:block">
+    <aside className="sticky top-28 hidden h-fit lg:block" aria-label="Report sections navigation">
       <div className="surface-elevated w-[250px] rounded-[28px] p-7">
         <p className="label">CALIBRATION REPORT</p>
 
@@ -43,29 +22,31 @@ const ResultsSidebar = ({ activeSection, onSectionChange }: Props) => {
 
         <div className="divider my-7" />
 
-        <nav className="space-y-2">
-          {sections.map((section) => {
+        <nav className="space-y-2" role="tablist" aria-label="Report sections">
+          {REPORT_SECTIONS.map((section) => {
             const active = activeSection === section.id;
 
             return (
               <button
                 key={section.id}
                 type="button"
+                role="tab"
+                aria-selected={active}
+                aria-controls={section.id}
                 onClick={() => {
                   onSectionChange(section.id);
-
-                  document.getElementById(section.id)?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
+                  document
+                    .getElementById(section.id)
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all duration-200 ${
+                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                   active
                     ? "bg-[var(--accent-soft)]"
                     : "hover:bg-[var(--surface-soft)]"
                 }`}
               >
                 <span
+                  aria-hidden="true"
                   className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
                     active ? "bg-[var(--accent)]" : "bg-[var(--border-strong)]"
                   }`}

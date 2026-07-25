@@ -17,36 +17,60 @@ const Results = () => {
   const [activeSection, setActiveSection] = useState("overview");
 
   useEffect(() => {
-    const sections = ["overview", "recommendations", "evidence", "seniority", "breakdown"];
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo({ top: 0, left: 0 });
+  }, []);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      {
-        threshold: 0.15,
-        rootMargin: "-80px 0px -50% 0px",
-      }
-    );
+  useEffect(() => {
+    const sectionIds: Array<
+      "overview" | "recommendations" | "evidence" | "seniority" | "breakdown"
+    > = ["overview", "recommendations", "evidence", "seniority", "breakdown"];
 
-    sections.forEach((sectionId) => {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        observer.observe(element);
+    const activationLine = 140;
+
+    let rafId = 0;
+    let lastSection = "";
+
+    const updateActive = () => {
+      rafId = 0;
+
+      let active = sectionIds[0];
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const top = el.getBoundingClientRect().top;
+        if (top <= activationLine) {
+          active = id;
+        } else {
+          break;
+        }
       }
-    });
+
+      if (active !== lastSection) {
+        lastSection = active;
+        setActiveSection(active);
+      }
+    };
+
+    const onScroll = () => {
+      if (rafId === 0) {
+        rafId = window.requestAnimationFrame(updateActive);
+      }
+    };
+
+    updateActive();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
 
     return () => {
-      sections.forEach((sectionId) => {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          observer.unobserve(element);
-        }
-      });
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (rafId !== 0) {
+        window.cancelAnimationFrame(rafId);
+      }
     };
   }, []);
 
