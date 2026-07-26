@@ -1,23 +1,82 @@
 import { z } from "zod";
 import { gemini } from "../config/gemini.js";
 
-export const generateStructuredResponse = async <T>(
-  prompt: string,
-  schema: z.ZodSchema<T>
-): Promise<T> => {
-  const response = await gemini.models.generateContent({
-    model: process.env.GEMINI_MODEL!,
-    contents: prompt,
-  });
+const RETRY_INSTRUCTION =
+  "\n\nYour previous response was invalid JSON. Return ONLY valid JSON matching the schema, with no extra text.";
 
-  const text = response.text ?? "";
+const sanitizeJsonSchemaForGemini = (value: unknown): unknown => {
+  if (Array.isArray(value)) {
+    return value.map(sanitizeJsonSchemaForGemini);
+  }
 
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+
+  const schema = Object.fromEntries(
+    Object.entries(value).flatMap(([key, child]) => {
+      // Gemini's responseJsonSchema supports enum values, but not JSON Schema's
+      // const keyword. Zod emits const for z.literal(), so translate it.
+      if (key === "const") {
+        return [["enum", [child]]];
+      }
+
+      // This is metadata for JSON Schema validators, not part of Gemini's
+      // supported responseJsonSchema subset.
+      if (key === "$schema") {
+        return [];
+      }
+
+      return [[key, sanitizeJsonSchemaForGemini(child)]];
+    })
+  );
+
+  return schema;
+};
+
+const parseStructuredResponse = <T>(text: string, schema: z.ZodSchema<T>): T => {
   const cleanedText = text
     .replace(/```json/g, "")
     .replace(/```/g, "")
     .trim();
 
-  const parsed = JSON.parse(cleanedText);
+  return schema.parse(JSON.parse(cleanedText));
+};
 
-  return schema.parse(parsed);
+const promptPreview = (prompt: string) =>
+  prompt.replace(/\s+/g, " ").trim().slice(0, 200);
+
+export const generateStructuredResponse = async <T>(
+  prompt: string,
+  schema: z.ZodSchema<T>
+): Promise<T> => {
+  const responseJsonSchema = sanitizeJsonSchemaForGemini(
+    z.toJSONSchema(schema, { target: "draft-07" })
+  );
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const response = await gemini.models.generateContent({
+      model: process.env.GEMINI_MODEL!,
+      contents: attempt === 0 ? prompt : `${prompt}${RETRY_INSTRUCTION}`,
+      config: {
+        responseMimeType: "application/json",
+        responseJsonSchema,
+      },
+    });
+
+    try {
+      return parseStructuredResponse(response.text ?? "", schema);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  const reason = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(
+    `Gemini structured response failed validation after 2 attempts for model ` +
+      `'${process.env.GEMINI_MODEL ?? "unset"}' (prompt preview: ` +
+      `'${promptPreview(prompt)}'). Last validation error: ${reason}`,
+    { cause: lastError }
+  );
 };

@@ -62,9 +62,8 @@ const SeniorityCard = ({ result }: Props) => {
             </h2>
 
             <p className="mt-3 max-w-2xl text-[16px] leading-8 text-[var(--text-secondary)]">
-              Based on your resume evidence and the supplied job
-              description, the AI estimates your current experience
-              level with the following confidence.
+              Based on your resume evidence, the AI estimates your current
+              experience level with the following confidence.
             </p>
           </div>
 
