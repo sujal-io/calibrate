@@ -3,6 +3,21 @@ import { gemini } from "../config/gemini.js";
 
 const RETRY_INSTRUCTION =
   "\n\nYour previous response was invalid JSON. Return ONLY valid JSON matching the schema, with no extra text.";
+const RATE_LIMIT_RETRY_DELAY_MS = 3_000;
+
+const isRateLimitError = (error: unknown) => {
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
+
+  const status = "status" in error ? error.status : undefined;
+  const message = error instanceof Error ? error.message : "";
+
+  return status === 429 || /\b429\b/.test(message);
+};
+
+const wait = (milliseconds: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
 
 const sanitizeJsonSchemaForGemini = (value: unknown): unknown => {
   if (Array.isArray(value)) {
@@ -46,6 +61,32 @@ const parseStructuredResponse = <T>(text: string, schema: z.ZodSchema<T>): T => 
 const promptPreview = (prompt: string) =>
   prompt.replace(/\s+/g, " ").trim().slice(0, 200);
 
+const generateContentWithRateLimitRetry = async (
+  prompt: string,
+  responseJsonSchema: unknown
+) => {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await gemini.models.generateContent({
+        model: process.env.GEMINI_MODEL!,
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseJsonSchema,
+        },
+      });
+    } catch (error) {
+      if (!isRateLimitError(error) || attempt === 1) {
+        throw error;
+      }
+
+      await wait(RATE_LIMIT_RETRY_DELAY_MS);
+    }
+  }
+
+  throw new Error("Unreachable rate-limit retry state");
+};
+
 export const generateStructuredResponse = async <T>(
   prompt: string,
   schema: z.ZodSchema<T>
@@ -56,14 +97,12 @@ export const generateStructuredResponse = async <T>(
   let lastError: unknown;
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    const response = await gemini.models.generateContent({
-      model: process.env.GEMINI_MODEL!,
-      contents: attempt === 0 ? prompt : `${prompt}${RETRY_INSTRUCTION}`,
-      config: {
-        responseMimeType: "application/json",
-        responseJsonSchema,
-      },
-    });
+    const requestPrompt =
+      attempt === 0 ? prompt : `${prompt}${RETRY_INSTRUCTION}`;
+    const response = await generateContentWithRateLimitRetry(
+      requestPrompt,
+      responseJsonSchema
+    );
 
     try {
       return parseStructuredResponse(response.text ?? "", schema);
