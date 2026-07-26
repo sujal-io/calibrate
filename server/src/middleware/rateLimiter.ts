@@ -25,3 +25,14 @@ export const rewriteLimiter = rateLimit({
       "Too many rewrites. Please wait an hour before trying again.",
   },
 });
+
+export const jobDescriptionLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error:
+      "You have reached the hourly job description analysis limit. Please try again later.",
+  },
+});

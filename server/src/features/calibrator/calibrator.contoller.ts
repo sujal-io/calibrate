@@ -1,14 +1,47 @@
 import { Request, Response } from "express";
-import { calibrateSeniority, extractEvidence } from "./calibrator.service.js";
+import { getAuth } from "@clerk/express";
+import { Resume } from "../resume/resume.model.js";
+import {
+  calibrateSeniority,
+  extractEvidence,
+} from "./calibrator.service.js";
 
-export const calibrate = async (req: Request, res: Response): Promise<void> => {
+export const calibrate = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
-    const { bullets } = req.body;
+    const { userId: clerkId } = getAuth(req);
 
-    if (!Array.isArray(bullets) || bullets.length === 0) {
+    if (!clerkId) {
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized.",
+      });
+      return;
+    }
+
+    const resume = await Resume.findOne({ clerkId });
+
+    if (!resume) {
+      res.status(404).json({
+        success: false,
+        message: "Resume not found.",
+      });
+      return;
+    }
+
+    const bullets = resume.bullets
+      .map((bullet) => bullet.text)
+      .filter(
+        (text): text is string =>
+          typeof text === "string" && text.trim().length > 0,
+      );
+
+    if (bullets.length === 0) {
       res.status(400).json({
         success: false,
-        message: "Bullets are required.",
+        message: "Resume contains no bullets.",
       });
       return;
     }
@@ -27,7 +60,7 @@ export const calibrate = async (req: Request, res: Response): Promise<void> => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to extract evidence.",
+      message: "Failed to calibrate resume.",
     });
   }
 };

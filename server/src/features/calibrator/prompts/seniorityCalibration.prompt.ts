@@ -21,20 +21,23 @@ Base your decision ONLY on:
 
 Do not invent additional criteria.
 
-Return ONLY valid JSON.
+RReturn ONLY valid JSON.
 
 {
-  "level":"Intern | Junior | Mid-Level | Senior | Staff",
-  "confidence":number,
-  "strengths":[
+  "level":"Intern-level | Junior-level | Mid-level | Senior-level | Staff-level",
+  "confidence": 90,
+  "strengths": [
     "..."
   ],
-  "gaps":[
+  "gaps": [
     "..."
   ],
-  "nextLevelSuggestions":[
+  "nextLevelSuggestions": [
     "..."
   ]
+}
 
-Return confidence as an integer between 0 and 100.Do not return decimals.Do not return values between 0 and 1.
+Return confidence as an integer between 0 and 100.
+Do not return decimals.
+Do not return values between 0 and 1.
 `;

@@ -23,12 +23,12 @@ const Workspace = () => {
   const isLoadingRef = useRef(false);
 
   const hasSavedCalibration =
-  typeof window !== "undefined" &&
-  !!localStorage.getItem("latest-calibration");
+    typeof window !== "undefined" &&
+    !!localStorage.getItem("latest-calibration");
 
-if (hasSavedCalibration) {
-  return <Navigate to="/results" replace />;
-}
+  if (hasSavedCalibration) {
+    return <Navigate to="/results" replace />;
+  }
 
   const canCalibrate =
     !isLoading && resume !== null && jobDescription.trim().length > 0;
@@ -83,13 +83,9 @@ if (hasSavedCalibration) {
         return;
       }
 
-      const bullets = context.retrievedBullets.map(
-        (bullet: { text: string }) => bullet.text,
-      );
-
       let calibration;
       try {
-        calibration = await calibrateResume(bullets, token);
+        calibration = await calibrateResume(token);
       } catch {
         show({
           message: "Couldn't calibrate. Please try again in a moment.",

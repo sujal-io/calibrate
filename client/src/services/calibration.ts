@@ -60,14 +60,11 @@ export const retrieveContext = async (
 };
 
 export const calibrateResume = async (
-  bullets: string[],
   token: string,
 ) => {
   const { data } = await api.post(
     "/calibrator",
-    {
-      bullets,
-    },
+    null,
     {
       headers: {
         Authorization: `Bearer ${token}`,
