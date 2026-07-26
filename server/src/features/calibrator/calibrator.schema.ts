@@ -37,3 +37,8 @@ confidence: z.number().min(0).max(100),
 export type CalibrationResult = z.infer<
   typeof CalibrationResultSchema
 >;
+
+export type CalibrationResponse = CalibrationResult & {
+  statedRole: string;
+  comparison: string;
+};

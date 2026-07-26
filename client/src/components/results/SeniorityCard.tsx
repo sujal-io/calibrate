@@ -4,6 +4,8 @@ type CalibrationResult = {
   strengths: string[];
   gaps: string[];
   nextLevelSuggestions: string[];
+  statedRole: string;
+  comparison: string;
 };
 
 type Props = {
