@@ -205,7 +205,13 @@ const Results = () => {
             </section>
 
             <section id="seniority">
-              <SeniorityCard result={calibration.result} />
+              <SeniorityCard
+                result={{
+                  ...calibration.result,
+                  statedRole: calibration.statedRole,
+                  comparison: calibration.comparison,
+                }}
+              />
             </section>
 
             <section id="breakdown">
