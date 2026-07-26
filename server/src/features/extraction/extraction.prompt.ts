@@ -21,7 +21,8 @@ The JSON must exactly match this structure:
   "company": string,
   "role": string,
   "duration": string,
-  "description": string[]
+  "description": string[],
+  "isTechnicalRole": boolean
 }
   ],
   "education": [

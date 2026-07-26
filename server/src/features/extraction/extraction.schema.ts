@@ -19,6 +19,7 @@ export const ResumeSchema = z.object({
     role: z.string(),
     duration: z.string(),
     description: z.array(z.string()),
+    isTechnicalRole: z.boolean(),
   })
 ),
 

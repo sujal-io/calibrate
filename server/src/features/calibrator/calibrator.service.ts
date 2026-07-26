@@ -25,7 +25,7 @@ export const createSeniorityComparison = (
   const impliedLevel = getImpliedLevelFromRole(statedRole);
 
   if (impliedLevel && impliedLevel !== inferredLevel) {
-    return `Your resume lists you as a ${statedRole}, but your work reads as ${inferredLevel}.`;
+    return `Your resume lists you as a ${statedRole}, and your work reads as ${inferredLevel}.`;
   }
 
   return `Your resume lists you as a ${statedRole}, and your work reads as ${inferredLevel}.`;
@@ -57,8 +57,22 @@ Evaluation:
 ${JSON.stringify(evidence, null, 2)}
 `;
 
-  return generateStructuredResponse(
+  const result = await generateStructuredResponse(
     prompt,
     CalibrationResultSchema,
   );
+
+  const averageScore =
+    (
+      evidence.taskVsOutcome.score +
+      evidence.scope.score +
+      evidence.autonomy.score
+    ) / 3;
+
+  const confidence = Math.min(95,Math.round((averageScore / 5) * 100),);
+
+  return {
+    ...result,
+    confidence,
+  };
 };

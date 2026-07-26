@@ -10,10 +10,83 @@ import EvidenceList from "../components/results/EvidenceList";
 import SeniorityCard from "../components/results/SeniorityCard";
 import EvidenceBreakdown from "../components/results/EvidenceBreakdown";
 import { useState, useEffect } from "react";
+import { useAuth } from "@clerk/clerk-react";
+import {
+  getCalibrationCacheKey,
+  getStoredCalibration,
+} from "../lib/calibrationCache";
+
+type MatchResult = {
+  matchPercentage: number;
+  matchingSkills: string[];
+  missingSkills: string[];
+  extraSkills: string[];
+};
+
+type Recommendations = {
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+  recommendedProjects: string[];
+};
+
+type ResumeBullet = {
+  bulletId: string;
+  text: string;
+  similarity: number;
+};
+
+type EvidenceCategory = {
+  score: number;
+  maxScore: number;
+  reasoning: string;
+  evidence: string[];
+};
+
+type CalibrationResult = {
+  level: string;
+  confidence: number;
+  strengths: string[];
+  gaps: string[];
+  nextLevelSuggestions: string[];
+};
+
+type CalibrationReport = {
+  ownerId: string;
+  analysis: {
+    data: {
+      matchResult: MatchResult;
+      recommendations: Recommendations;
+      structuredJobDescription: unknown;
+    };
+  };
+  context: {
+    retrievedBullets: ResumeBullet[];
+  };
+  calibration: {
+    result: CalibrationResult;
+    statedRole: string;
+    comparison: string;
+    evidence: {
+      autonomy: EvidenceCategory;
+      scope: EvidenceCategory;
+      taskVsOutcome: EvidenceCategory;
+    };
+  };
+};
+
+const isCalibrationReport = (value: unknown): value is CalibrationReport =>
+  typeof value === "object" &&
+  value !== null &&
+  "ownerId" in value &&
+  "analysis" in value &&
+  "context" in value &&
+  "calibration" in value;
 
 const Results = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { userId, isLoaded } = useAuth();
   const [activeSection, setActiveSection] = useState("overview");
 
   useEffect(() => {
@@ -26,7 +99,7 @@ const Results = () => {
   useEffect(() => {
     const sectionIds: Array<
       "overview" | "recommendations" | "evidence" | "seniority" | "breakdown"
-    > = ["overview", "recommendations", "evidence", "seniority", "breakdown"];
+    > = ["overview", "seniority", "evidence", "breakdown", "recommendations"];
 
     const activationLine = 140;
 
@@ -74,13 +147,22 @@ const Results = () => {
     };
   }, []);
 
-  const report =
-    state ??
-    (() => {
-      const saved = localStorage.getItem("latest-calibration");
+  if (!isLoaded) {
+    return null;
+  }
 
-      return saved ? JSON.parse(saved) : null;
-    })();
+  const routeReport =
+    userId && isCalibrationReport(state) && state.ownerId === userId
+      ? state
+      : null;
+  const storedReport = userId ? getStoredCalibration(userId) : null;
+  const report =
+    routeReport ??
+    (userId &&
+    isCalibrationReport(storedReport) &&
+    storedReport.ownerId === userId
+      ? storedReport
+      : null);
 
   if (!report) {
     return <Navigate to="/" replace />;
@@ -89,7 +171,9 @@ const Results = () => {
   const { analysis, context, calibration } = report;
 
   const handleNewCalibration = () => {
-    localStorage.removeItem("latest-calibration");
+    if (userId) {
+      localStorage.removeItem(getCalibrationCacheKey(userId));
+    }
 
     navigate("/");
   };
@@ -146,7 +230,6 @@ const Results = () => {
           {/* Right */}
 
           <div className="surface-elevated rounded-[30px] p-5">
-
             <h3
               className="text-2xl"
               style={{
@@ -189,9 +272,13 @@ const Results = () => {
               />
             </section>
 
-            <section id="recommendations">
-              <Recommendations
-                recommendations={analysis.data.recommendations}
+            <section id="seniority">
+              <SeniorityCard
+                result={{
+                  ...calibration.result,
+                  statedRole: calibration.statedRole,
+                  comparison: calibration.comparison,
+                }}
               />
             </section>
 
@@ -204,18 +291,14 @@ const Results = () => {
               />
             </section>
 
-            <section id="seniority">
-              <SeniorityCard
-                result={{
-                  ...calibration.result,
-                  statedRole: calibration.statedRole,
-                  comparison: calibration.comparison,
-                }}
-              />
-            </section>
-
             <section id="breakdown">
               <EvidenceBreakdown evidence={calibration.evidence} />
+            </section>
+
+            <section id="recommendations">
+              <Recommendations
+                recommendations={analysis.data.recommendations}
+              />
             </section>
           </div>
         </div>

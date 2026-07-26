@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useToast } from "../hooks/useToast";
+import { getCalibrationCacheKey } from "../lib/calibrationCache";
 
 export function AuthStatusToasts() {
   const { userId, isLoaded, isSignedIn } = useAuth();
@@ -23,6 +24,7 @@ export function AuthStatusToasts() {
     } else {
       if (lastSeenUserId) {
         window.localStorage.removeItem("__calibrate_last_uid");
+        window.localStorage.removeItem(getCalibrationCacheKey(lastSeenUserId));
         show({
           message: "Signed out.",
           type: "info",

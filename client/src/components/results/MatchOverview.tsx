@@ -59,7 +59,7 @@ const MatchOverview = ({
   return (
     <section className="space-y-8">
       <div className="surface-elevated rounded-[30px] px-6 sm:px-10 py-10 sm:py-12 text-center">
-        <p className="label">OVERALL MATCH</p>
+        <p className="label">SKILL MATCH SCORE</p>
 
         <h2
           className="mt-5 text-6xl sm:text-7xl tracking-[-0.05em]"

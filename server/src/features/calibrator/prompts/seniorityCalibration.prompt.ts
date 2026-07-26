@@ -21,11 +21,10 @@ Base your decision ONLY on:
 
 Do not invent additional criteria.
 
-RReturn ONLY valid JSON.
+Return ONLY valid JSON.
 
 {
   "level":"Intern-level | Junior-level | Mid-level | Senior-level | Staff-level",
-  "confidence": 90,
   "strengths": [
     "..."
   ],
@@ -37,7 +36,10 @@ RReturn ONLY valid JSON.
   ]
 }
 
-Return confidence as an integer between 0 and 100.
+The values shown above are illustrative placeholders describing the expected JSON shape only.
+Compute every field independently from the supplied evidence.
+Never copy placeholder values or treat them as default outputs.
+
 Do not return decimals.
 Do not return values between 0 and 1.
 `;

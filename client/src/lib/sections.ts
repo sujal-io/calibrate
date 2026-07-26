@@ -5,8 +5,9 @@ export type ReportSection = {
 
 export const REPORT_SECTIONS: ReportSection[] = [
   { id: "overview", label: "Overview" },
-  { id: "recommendations", label: "Recommendations" },
+   { id: "seniority", label: "Seniority" },
   { id: "evidence", label: "Evidence" },
-  { id: "seniority", label: "Seniority" },
+ 
   { id: "breakdown", label: "Breakdown" },
+  { id: "recommendations", label: "Recommendations" },
 ];

@@ -4,6 +4,7 @@ import ResumeUpload from "../components/ResumeUpload";
 import JobDescriptionInput from "../components/JobDescriptionInput";
 import { UserButton, useAuth } from "@clerk/clerk-react";
 import { Navigate, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import {
   uploadResume,
@@ -11,10 +12,14 @@ import {
   retrieveContext,
   calibrateResume,
 } from "../services/calibration";
+import {
+  getCalibrationCacheKey,
+  getStoredCalibration,
+} from "../lib/calibrationCache";
 import { useToast } from "../hooks/useToast";
 
 const Workspace = () => {
-  const { getToken } = useAuth();
+  const { getToken, userId, isLoaded } = useAuth();
   const navigate = useNavigate();
   const { show } = useToast();
   const [resume, setResume] = useState<File | null>(null);
@@ -23,8 +28,11 @@ const Workspace = () => {
   const isLoadingRef = useRef(false);
 
   const hasSavedCalibration =
-    typeof window !== "undefined" &&
-    !!localStorage.getItem("latest-calibration");
+    typeof window !== "undefined" && !!userId && !!getStoredCalibration(userId);
+
+  if (!isLoaded) {
+    return null;
+  }
 
   if (hasSavedCalibration) {
     return <Navigate to="/results" replace />;
@@ -35,7 +43,16 @@ const Workspace = () => {
 
   const handleCalibrate = async () => {
     if (!resume) return;
+    if (!userId) {
+      show({
+        message: "Please sign in to continue.",
+        type: "warning",
+      });
+      return;
+    }
     if (isLoadingRef.current) return;
+
+    const ownerId = userId;
 
     try {
       isLoadingRef.current = true;
@@ -86,17 +103,33 @@ const Workspace = () => {
       let calibration;
       try {
         calibration = await calibrateResume(token);
-      } catch {
+      } catch (error) {
+        if (
+          axios.isAxiosError(error) &&
+          error.response?.data?.reason === "INSUFFICIENT_EVIDENCE"
+        ) {
+          show({
+            message:
+              "Your resume doesn't contain enough experience bullets for a reliable seniority assessment. Add more detailed experience and try again.",
+            type: "warning",
+            duration: 4000,
+          });
+
+          return;
+        }
+
         show({
           message: "Couldn't calibrate. Please try again in a moment.",
           type: "error",
         });
+
         return;
       }
 
       localStorage.setItem(
-        "latest-calibration",
+        getCalibrationCacheKey(ownerId),
         JSON.stringify({
+          ownerId,
           analysis,
           context,
           calibration,
@@ -111,6 +144,7 @@ const Workspace = () => {
 
       navigate("/results", {
         state: {
+          ownerId,
           analysis,
           context,
           calibration,

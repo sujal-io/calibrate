@@ -7,10 +7,7 @@ import {
   extractEvidence,
 } from "./calibrator.service.js";
 
-export const calibrate = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const calibrate = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId: clerkId } = getAuth(req);
 
@@ -35,8 +32,14 @@ export const calibrate = async (
     const experience = Array.isArray(resume.structuredData?.experience)
       ? resume.structuredData.experience
       : [];
+    const technicalExperience = experience.filter(
+      (entry: { isTechnicalRole?: boolean }) => entry.isTechnicalRole === true,
+    );
     const statedRole =
-      experience[0]?.role ?? "No formal work experience listed";
+      technicalExperience[0]?.role ??
+      (experience.length > 0
+        ? "No technical work experience listed"
+        : "No formal work experience listed");
 
     const bullets = resume.bullets
       .map((bullet) => bullet.text)
@@ -50,6 +53,19 @@ export const calibrate = async (
         success: false,
         message: "Resume contains no bullets.",
       });
+      return;
+    }
+
+    if (bullets.length < 3) {
+      res.status(400).json({
+        success: false,
+        reason: "INSUFFICIENT_EVIDENCE",
+        minimumBullets: 3,
+        providedBullets: bullets.length,
+        message:
+          "At least 3 resume bullets are required for a reliable seniority assessment.",
+      });
+
       return;
     }
 
