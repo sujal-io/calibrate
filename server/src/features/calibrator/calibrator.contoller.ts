@@ -3,6 +3,7 @@ import { getAuth } from "@clerk/express";
 import { Resume } from "../resume/resume.model.js";
 import {
   calibrateSeniority,
+  createSeniorityComparison,
   extractEvidence,
 } from "./calibrator.service.js";
 
@@ -31,6 +32,12 @@ export const calibrate = async (
       return;
     }
 
+    const experience = Array.isArray(resume.structuredData?.experience)
+      ? resume.structuredData.experience
+      : [];
+    const statedRole =
+      experience[0]?.role ?? "No formal work experience listed";
+
     const bullets = resume.bullets
       .map((bullet) => bullet.text)
       .filter(
@@ -49,11 +56,14 @@ export const calibrate = async (
     const evidence = await extractEvidence(bullets);
 
     const result = await calibrateSeniority(evidence);
+    const comparison = createSeniorityComparison(statedRole, result.level);
 
     res.status(200).json({
       success: true,
       evidence,
       result,
+      statedRole,
+      comparison,
     });
   } catch (error) {
     console.error(error);

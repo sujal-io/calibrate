@@ -4,6 +4,8 @@ type CalibrationResult = {
   strengths: string[];
   gaps: string[];
   nextLevelSuggestions: string[];
+  statedRole: string;
+  comparison: string;
 };
 
 type Props = {
@@ -67,13 +69,30 @@ const SeniorityCard = ({ result }: Props) => {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface-soft)] px-8 py-6 text-center shrink-0">
-            <p className="label">CONFIDENCE</p>
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface-soft)] px-6 py-6 text-center sm:max-w-56">
+              <p className="label">STATED ROLE</p>
 
-            <h3 className="mt-3 text-5xl font-semibold">
-              {result.confidence}%
-            </h3>
+              <h3 className="mt-3 text-xl font-semibold leading-7 break-words">
+                {result.statedRole}
+              </h3>
+            </div>
+
+            <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface-soft)] px-8 py-6 text-center shrink-0">
+              <p className="label">CONFIDENCE</p>
+
+              <h3 className="mt-3 text-5xl font-semibold">
+                {result.confidence}%
+              </h3>
+            </div>
           </div>
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface-soft)] p-5">
+          <p className="label">TITLE AND EVIDENCE</p>
+          <p className="mt-2 text-[16px] leading-7 text-[var(--text-secondary)]">
+            {result.comparison}
+          </p>
         </div>
 
         <div className="mt-10 grid gap-6">
