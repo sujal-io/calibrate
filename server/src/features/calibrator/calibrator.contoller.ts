@@ -31,6 +31,12 @@ export const calibrate = async (
       return;
     }
 
+    const experience = Array.isArray(resume.structuredData?.experience)
+      ? resume.structuredData.experience
+      : [];
+    const statedRole =
+      experience[0]?.role ?? "No formal work experience listed";
+
     const bullets = resume.bullets
       .map((bullet) => bullet.text)
       .filter(
@@ -54,6 +60,7 @@ export const calibrate = async (
       success: true,
       evidence,
       result,
+      statedRole,
     });
   } catch (error) {
     console.error(error);

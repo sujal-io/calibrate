@@ -45,6 +45,8 @@ Rules:
 - If information is missing, use an empty string.
 - If an array section does not exist, return [].
 - Do not invent information.
+- Order experience entries newest-first. If the resume layout does not already
+  establish that order, use the dates in each entry's duration field.
 - Normalize technology names.
   Example:
   ReactJS -> React
